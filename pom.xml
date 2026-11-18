@@ -75,6 +75,12 @@
                 <artifactId>hutool-all</artifactId>
                 <version>${hutool.version}</version>
             </dependency>
+            <!--Seata 1.5.2 传递的 cglib 3.1 在 JDK 17 上初始化会失败-->
+            <dependency>
+                <groupId>cglib</groupId>
+                <artifactId>cglib</artifactId>
+                <version>3.3.0</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
     <dependencies>
@@ -102,6 +108,13 @@
                     <configuration>
                         <source>17</source> <!-- depending on your project -->
                         <target>17</target> <!-- depending on your project -->
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-maven-plugin</artifactId>
+                    <configuration>
+                        <jvmArguments>--add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.math=ALL-UNNAMED</jvmArguments>
                     </configuration>
                 </plugin>
             </plugins>
