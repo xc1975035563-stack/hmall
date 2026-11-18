@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.hmall.api.item.ItemClient;
 import com.hmall.api.item.dto.ItemDTO;
+import com.hmall.api.item.dto.OrderDetailDTO;
 import com.hmall.cart.domain.dto.CartFormDTO;
 import com.hmall.cart.domain.po.Cart;
 import com.hmall.cart.domain.vo.CartVO;
@@ -15,6 +16,7 @@ import com.hmall.common.utils.BeanUtils;
 import com.hmall.common.utils.CollUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
 import java.util.List;
@@ -103,6 +105,18 @@ public class CartServiceImpl extends ServiceImpl<CartMapper, Cart> implements IC
                 .in(Cart::getItemId, itemIds);
         // 2.删除
         remove(queryWrapper);
+    }
+
+    @Override
+    @Transactional
+    public void deductItems(List<OrderDetailDTO> items) {
+        for (OrderDetailDTO item : items) {
+            baseMapper.deductNum(item.getItemId(), 1L, item.getNum());
+            remove(new QueryWrapper<Cart>().lambda()
+                    .eq(Cart::getUserId, 1L)
+                    .eq(Cart::getItemId, item.getItemId())
+                    .le(Cart::getNum, 0));
+        }
     }
 
     private void checkCartsFull(Long userId) {

@@ -1,6 +1,7 @@
 package com.hmall.cart.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.hmall.api.item.dto.OrderDetailDTO;
 import com.hmall.cart.domain.dto.CartFormDTO;
 import com.hmall.cart.domain.po.Cart;
 import com.hmall.cart.domain.vo.CartVO;
@@ -22,4 +23,6 @@ public interface ICartService extends IService<Cart> {
     List<CartVO> queryMyCarts();
 
     void removeByItemIds(Collection<Long> itemIds);
+
+    void deductItems(List<OrderDetailDTO> items);
 }

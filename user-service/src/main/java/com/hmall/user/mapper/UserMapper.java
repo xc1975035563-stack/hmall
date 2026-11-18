@@ -13,6 +13,6 @@ import org.apache.ibatis.annotations.Update;
  * @author 黑马程序员
  */
 public interface UserMapper extends BaseMapper<User> {
-    @Update("update user set balance = balance - 0 where id = #{userId} and balance>=${totalFee}")
+    @Update("update user set balance = balance - #{totalFee} where id = #{userId} and balance >= #{totalFee}")
     int updateMoney(@Param("userId") Long userId, @Param("totalFee") Integer totalFee);
 }

@@ -1,14 +1,19 @@
 package com.hmall.cart.controller;
 
 
+import com.alibaba.csp.sentinel.annotation.SentinelResource;
+import com.alibaba.csp.sentinel.slots.block.BlockException;
+import com.hmall.api.item.dto.OrderDetailDTO;
 import com.hmall.cart.domain.dto.CartFormDTO;
 import com.hmall.cart.domain.po.Cart;
 import com.hmall.cart.domain.vo.CartVO;
 import com.hmall.cart.service.ICartService;
+import com.hmall.common.utils.CollUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,6 +24,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/carts")
 @RequiredArgsConstructor
+@Slf4j
 public class CartController {
     private final ICartService cartService;
 
@@ -42,9 +48,27 @@ public class CartController {
 
     @ApiOperation("查询购物车列表")
     @GetMapping
+    @SentinelResource(value = "queryMyCarts", fallback = "queryMyCartsFallback", blockHandler = "queryMyCartsBlockHandler")
     public List<CartVO> queryMyCarts(){
         return cartService.queryMyCarts();
     }
+
+    public List<CartVO> queryMyCartsFallback(Throwable throwable) {
+        log.error("查询购物车异常，执行 queryMyCartsFallback", throwable);
+        return CollUtils.emptyList();
+    }
+
+    public List<CartVO> queryMyCartsBlockHandler(BlockException blockException) {
+        log.error("查询购物车被限流或熔断，执行 queryMyCartsBlockHandler", blockException);
+        return CollUtils.emptyList();
+    }
+
+    @ApiOperation("按购买数量扣减购物车")
+    @PutMapping("/deduct")
+    public void deductItems(@RequestBody List<OrderDetailDTO> items) {
+        cartService.deductItems(items);
+    }
+
     @ApiOperation("批量删除购物车中商品")
     @ApiImplicitParam(name = "ids", value = "购物车条目id集合")
     @DeleteMapping
