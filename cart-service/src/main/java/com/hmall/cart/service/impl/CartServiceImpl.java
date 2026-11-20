@@ -14,6 +14,7 @@ import com.hmall.cart.service.ICartService;
 import com.hmall.common.exception.BizIllegalException;
 import com.hmall.common.utils.BeanUtils;
 import com.hmall.common.utils.CollUtils;
+import com.hmall.common.utils.UserContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,7 +40,7 @@ public class CartServiceImpl extends ServiceImpl<CartMapper, Cart> implements IC
     @Override
     public void addItem2Cart(CartFormDTO cartFormDTO) {
         // 1.获取登录用户
-        var userId = 1L;
+        var userId = UserContext.getUser();
 
         // 2.判断是否已经存在
         if(checkItemExists(cartFormDTO.getItemId(), userId)){
@@ -62,7 +63,7 @@ public class CartServiceImpl extends ServiceImpl<CartMapper, Cart> implements IC
     @Override
     public List<CartVO> queryMyCarts() {
         // 1.查询我的购物车列表
-        var carts = lambdaQuery().eq(Cart::getUserId, 1L).list();
+        var carts = lambdaQuery().eq(Cart::getUserId, UserContext.getUser()).list();
         if (CollUtils.isEmpty(carts)) {
             return CollUtils.emptyList();
         }
@@ -101,7 +102,7 @@ public class CartServiceImpl extends ServiceImpl<CartMapper, Cart> implements IC
         // 1.构建删除条件，userId和itemId
         var queryWrapper = new QueryWrapper<Cart>();
         queryWrapper.lambda()
-                .eq(Cart::getUserId, 1L)
+                .eq(Cart::getUserId, UserContext.getUser())
                 .in(Cart::getItemId, itemIds);
         // 2.删除
         remove(queryWrapper);
@@ -111,9 +112,9 @@ public class CartServiceImpl extends ServiceImpl<CartMapper, Cart> implements IC
     @Transactional
     public void deductItems(List<OrderDetailDTO> items) {
         for (OrderDetailDTO item : items) {
-            baseMapper.deductNum(item.getItemId(), 1L, item.getNum());
+            baseMapper.deductNum(item.getItemId(), UserContext.getUser(), item.getNum());
             remove(new QueryWrapper<Cart>().lambda()
-                    .eq(Cart::getUserId, 1L)
+                    .eq(Cart::getUserId, UserContext.getUser())
                     .eq(Cart::getItemId, item.getItemId())
                     .le(Cart::getNum, 0));
         }

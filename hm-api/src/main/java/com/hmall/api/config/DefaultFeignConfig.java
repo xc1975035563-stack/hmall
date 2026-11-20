@@ -9,4 +9,9 @@ public class DefaultFeignConfig {
     public ItemClientFallbackFactory itemClientFallbackFactory() {
         return new ItemClientFallbackFactory();
     }
+
+    @Bean
+    public UserInfoRequestInterceptor userInfoRequestInterceptor() {
+        return new UserInfoRequestInterceptor();
+    }
 }
